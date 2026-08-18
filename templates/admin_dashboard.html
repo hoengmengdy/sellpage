@@ -1,0 +1,7 @@
+{% extends 'admin_base.html' %}{% block title %}Dashboard{% endblock %}{% block content %}
+<section class="stats-grid">
+{% set cards=[('Total Products',stats.total,'fa-boxes-stacked','red'),('Available',stats.available,'fa-circle-check','green'),('Sold',stats.sold,'fa-bag-shopping','orange'),('Facebook Pages',stats.pages,'fa-facebook','blue'),('Accounts',stats.accounts,'fa-users','purple'),('Discounted',stats.discounted,'fa-tags','pink')] %}
+{% for label,value,icon,color in cards %}<article class="stat-card"><span class="stat-icon {{ color }}"><i class="fa-solid {{ icon }}"></i></span><div><b>{{ value }}</b><p>{{ label }}</p></div></article>{% endfor %}</section>
+<section class="panel"><div class="panel-head"><div><h2>Recent Products</h2><p>Latest products added to the marketplace</p></div><a class="secondary-button" href="{{ url_for('admin_products') }}">View All Products</a></div>
+{% if recent %}<div class="recent-list">{% for product in recent %}<article><img src="{{ product.image }}" alt=""><div class="recent-name"><b>{{ product.name }}</b><span>{{ product.followers }} followers</span></div><strong>${{ '%.2f'|format(product.price) }}</strong><span class="status {{ product.status }}">{{ product.status|title }}</span></article>{% endfor %}</div>{% else %}<div class="blank"><i class="fa-solid fa-box-open"></i><p>No products yet.</p><a href="{{ url_for('admin_add_product') }}">Add your first product</a></div>{% endif %}</section>
+{% endblock %}

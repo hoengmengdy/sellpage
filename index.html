@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="km">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="description" content="SMM Digital marketplace for quality Facebook pages and digital services.">
+    <title>SMM DIGITAL — Facebook Page Marketplace</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Hanuman:wght@300;400;600;700&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+    <div class="loader" id="loader" aria-hidden="true"><span></span></div>
+    <header class="topbar">
+        <div class="container nav-inner">
+            <a class="brand" href="#home" aria-label="SMM Digital home">
+                <img class="brand-mark" src="images/logo.jpg" alt="SMM Digital logo">
+                <span><strong>SMM DIGITAL</strong><small>លក់ផេក • ទិញផេក • សេវាកម្ម</small></span>
+            </a>
+            <nav class="social-nav" aria-label="Contact links">
+                <a href="https://facebook.com/" target="_blank" rel="noopener" aria-label="Facebook"><i class="fa-brands fa-facebook-f"></i></a>
+                <a href="https://t.me/heng_dexter3" target="_blank" rel="noopener" aria-label="Telegram"><i class="fa-brands fa-telegram"></i></a>
+                <a href="tel:+855977225720" aria-label="Phone"><i class="fa-solid fa-phone"></i></a>
+            </nav>
+        </div>
+    </header>
+
+    <main id="home">
+        <section class="hero">
+            <div class="hero-content">
+                <h1>SMM DIGITAL</h1>
+                <p>មានលក់ផេក គុណភាពល្អ និងសេវាកម្ម</p>
+                <span>• លក់ផេក • ទិញផេក • សេវាកម្មផ្សេងៗ</span>
+            </div>
+        </section>
+
+        <section class="market container" aria-labelledby="products-title">
+            <div class="search-wrap">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input id="searchInput" type="search" placeholder="ស្វែងរក... (2.5K followers, page)" autocomplete="off" aria-label="Search products">
+                <button id="clearSearch" type="button" aria-label="Clear search"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+
+            <div class="filters" id="filters" role="group" aria-label="Product categories">
+                <button class="filter active" data-category="all"><i class="fa-solid fa-table-cells-large"></i> ទាំងអស់</button>
+                <button class="filter" data-category="new"><i class="fa-regular fa-window-maximize"></i> ផេក Reel</button>
+                <button class="filter" data-category="page"><i class="fa-solid fa-star"></i> ផេក PE</button>
+            </div>
+
+            <div class="section-heading">
+                <h2 id="products-title"><i class="fa-solid fa-table-cells-large"></i> ទំនិញទាំងអស់</h2>
+                <span id="productCount">ទំនិញ 0</span>
+            </div>
+            <div class="product-grid" id="productGrid" aria-live="polite"></div>
+            <div class="empty-state" id="emptyState" hidden>
+                <i class="fa-solid fa-box-open"></i>
+                <h3>រកមិនឃើញទំនិញ</h3>
+                <p>សូមសាកល្បងពាក្យស្វែងរក ឬប្រភេទផ្សេងទៀត។</p>
+                <button type="button" id="resetFilters">បង្ហាញទាំងអស់</button>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div class="container footer-main">
+            <div class="footer-brand"><img class="brand-mark" src="images/logo.jpg" alt="SMM Digital logo"><strong>SMM DIGITAL</strong></div>
+            <div class="footer-meta"><a href="tel:+855977225720"><i class="fa-solid fa-phone"></i> +855 97 722 5720</a><span><i class="fa-solid fa-location-dot"></i> ភ្នំពេញ កម្ពុជា</span></div>
+            <div class="footer-social"><a href="https://facebook.com/" target="_blank" rel="noopener"><i class="fa-brands fa-facebook"></i> Facebook</a><a href="https://t.me/heng_dexter3" target="_blank" rel="noopener"><i class="fa-brands fa-telegram"></i> Telegram</a></div>
+        </div>
+        <p class="copyright">© 2026 SMM DIGITAL. រក្សាសិទ្ធិគ្រប់យ៉ាង។</p>
+    </footer>
+
+    <a class="telegram-float" href="https://t.me/heng_dexter3" target="_blank" rel="noopener" aria-label="Chat on Telegram"><i class="fa-brands fa-telegram"></i></a>
+
+    <div class="modal" id="productModal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+        <div class="modal-dialog">
+            <button class="modal-close" id="modalClose" type="button" aria-label="Close"><i class="fa-solid fa-xmark"></i></button>
+            <div class="modal-image"><img id="modalImage" src="" alt=""></div>
+            <div class="modal-content">
+                <p class="eyebrow">ទំនិញពេញនិយម</p>
+                <h2 id="modalTitle"></h2>
+                <div class="modal-price"><strong id="modalPrice"></strong><del id="modalOldPrice"></del></div>
+                <ul class="features">
+                    <li><i class="fa-solid fa-hand-point-right"></i> Followers: <b id="modalFollowers"></b></li>
+                    <li><i class="fa-solid fa-hand-point-right"></i> ផេកគុណភាព 100% ✅</li>
+                    <li><i class="fa-solid fa-hand-point-right"></i> <span id="modalDescription"></span></li>
+                    <li><i class="fa-solid fa-circle-check"></i> មានក្នុងស្តុក</li>
+                </ul>
+                <div class="modal-actions">
+                    <a href="https://facebook.com/" target="_blank" rel="noopener" class="facebook"><i class="fa-brands fa-facebook"></i> ទាក់ទង Facebook</a>
+                    <a href="https://t.me/heng_dexter3" target="_blank" rel="noopener" class="telegram"><i class="fa-brands fa-telegram"></i> Telegram</a>
+                </div>
+                <a class="buy-button" href="https://t.me/heng_dexter3" target="_blank" rel="noopener"><i class="fa-solid fa-cart-shopping"></i> ទិញឥឡូវនេះ</a>
+            </div>
+        </div>
+    </div>
+    <script src="js/products-data.js"></script>
+    <script src="js/app.js"></script>
+</body>
+
+</html>

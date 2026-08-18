@@ -1,0 +1,14 @@
+<form method="post" enctype="multipart/form-data" class="product-form" novalidate>
+  <section class="form-card"><h2>Product Information</h2><div class="form-grid">
+    <label class="wide">Product Name *<input name="name" value="{{ product.get('name','') }}" required placeholder="PAGE 10K Follower"></label>
+    <label>Followers *<input name="followers" value="{{ product.get('followers','') }}" required placeholder="10K"></label>
+    <label>Category *<select name="category" required><option value="">Select category</option>{% for value,label in categories.items() %}<option value="{{ value }}" {{ 'selected' if product.get('category')==value }}>{{ label }}</option>{% endfor %}</select></label>
+    <label>Price (USD) *<input name="price" type="number" step="0.01" min="0" value="{{ product.get('price','') }}" required></label>
+    <label>Old Price (optional)<input name="oldPrice" type="number" step="0.01" min="0" value="{{ product.get('oldPrice') or '' }}"></label>
+    <label>Discount<input name="discount" value="{{ product.get('discount') or '' }}" placeholder="Auto-calculated if empty"></label>
+    <label>Status *<select name="status" required>{% for value in ['available','sold','hidden'] %}<option value="{{ value }}" {{ 'selected' if product.get('status','available')==value }}>{{ value|title }}</option>{% endfor %}</select></label>
+    <label class="wide">Description<textarea name="description" rows="4" placeholder="Product details...">{{ product.get('description','') }}</textarea></label>
+  </div></section>
+  <section class="form-card"><h2>Image & Contact</h2><div class="form-grid"><label class="wide">Product Image{% if product.get('image') %}<img class="image-preview" id="imagePreview" src="{{ product.image }}" alt="Current product image">{% else %}<img class="image-preview" id="imagePreview" hidden alt="Preview">{% endif %}<input id="imageInput" name="image" type="file" accept=".jpg,.jpeg,.png,.webp"><small>JPG, PNG or WEBP. Maximum 10MB.</small></label><label>Facebook URL<input type="url" name="facebook_url" value="{{ product.get('facebook_url','') }}" placeholder="https://facebook.com/..."></label><label>Telegram URL<input type="url" name="telegram_url" value="{{ product.get('telegram_url','') }}" placeholder="https://t.me/heng_dexter3"></label></div></section>
+  <div class="form-actions"><a class="secondary-button" href="{{ url_for('admin_products') }}">Cancel</a><button class="primary-button" type="submit"><i class="fa-solid fa-floppy-disk"></i> {{ submit_label }}</button></div>
+</form>

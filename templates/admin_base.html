@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>{% block title %}Admin{% endblock %} — SMM DIGITAL</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Hanuman:wght@400;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+</head>
+<body>
+  <aside class="sidebar" id="sidebar">
+    <a class="admin-brand" href="{{ url_for('admin_dashboard') }}"><img src="{{ url_for('static', filename='images/logo.jpg') }}" alt=""><span>SMM DIGITAL<small>ADMIN PANEL</small></span></a>
+    <nav>
+      <a class="{{ 'active' if request.endpoint == 'admin_dashboard' }}" href="{{ url_for('admin_dashboard') }}"><i class="fa-solid fa-chart-pie"></i> Dashboard</a>
+      <a class="{{ 'active' if request.endpoint == 'admin_products' }}" href="{{ url_for('admin_products') }}"><i class="fa-solid fa-box"></i> Products</a>
+      <a class="{{ 'active' if request.endpoint == 'admin_add_product' }}" href="{{ url_for('admin_add_product') }}"><i class="fa-solid fa-plus"></i> Add Product</a>
+      <a href="{{ url_for('index') }}" target="_blank"><i class="fa-solid fa-arrow-up-right-from-square"></i> View Website</a>
+      <a href="{{ url_for('admin_logout') }}"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
+    </nav>
+  </aside>
+  <div class="admin-shell">
+    <header class="admin-header"><button id="menuToggle" aria-label="Open menu"><i class="fa-solid fa-bars"></i></button><div><h1>{% block heading %}Admin Dashboard{% endblock %}</h1><p>Manage your marketplace</p></div><span class="admin-user"><i class="fa-solid fa-user-shield"></i> Admin</span></header>
+    <main class="admin-main">
+      {% with messages = get_flashed_messages(with_categories=true) %}{% if messages %}<div class="flash-stack">{% for category, message in messages %}<div class="flash {{ category }}"><i class="fa-solid {{ 'fa-circle-check' if category == 'success' else 'fa-circle-exclamation' }}"></i>{{ message }}<button aria-label="Dismiss">×</button></div>{% endfor %}</div>{% endif %}{% endwith %}
+      {% block content %}{% endblock %}
+    </main>
+  </div>
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+  <script src="{{ url_for('static', filename='js/admin.js') }}"></script>
+</body></html>
