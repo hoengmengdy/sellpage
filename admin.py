@@ -284,4 +284,4 @@ ensure_storage()
 sync_static_products(load_products())
 
 if __name__ == "__main__":
-    app.run(host="127.0.0.1", port=int(os.getenv("PORT", "5000")), debug=os.getenv("FLASK_DEBUG") == "1")
+    app.run(host="127.0.0.1", port=int(os.getenv("PORT", "5500")), debug=os.getenv("FLASK_DEBUG") == "1")
