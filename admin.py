@@ -10,6 +10,7 @@ from werkzeug.security import check_password_hash, generate_password_hash
 from werkzeug.utils import secure_filename
 
 BASE_DIR = Path(__file__).resolve().parent
+IS_VERCEL = os.getenv("VERCEL") == "1"
 DATA_DIR = BASE_DIR / "data"
 DATA_FILE = DATA_DIR / "products.json"
 STATIC_PRODUCTS_FILE = BASE_DIR / "js" / "products-data.js"
@@ -48,6 +49,11 @@ def ensure_storage():
 
 
 def sync_static_products(products):
+    # Vercel Functions run from a read-only deployment filesystem. The JSON and
+    # generated JavaScript are already bundled by Git, so do not rewrite them
+    # while importing the Flask application.
+    if IS_VERCEL:
+        return
     STATIC_PRODUCTS_FILE.parent.mkdir(parents=True, exist_ok=True)
     payload = json.dumps(products, ensure_ascii=False, separators=(",", ":"))
     temporary = STATIC_PRODUCTS_FILE.with_suffix(".tmp")
