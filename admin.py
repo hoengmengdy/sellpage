@@ -82,9 +82,9 @@ def load_products():
             if blobs:
                 latest = max(blobs, key=lambda blob: blob.uploaded_at)
                 result = blob_client().get(latest.url, access="private", use_cache=False)
-                if result is None or result.status_code != 200 or result.stream is None:
+                if result is None or result.status_code != 200:
                     raise StorageUnavailableError("Could not read product data from Vercel Blob.")
-                data = json.loads(b"".join(result.stream).decode("utf-8"))
+                data = json.loads(result.content.decode("utf-8"))
                 return data if isinstance(data, list) else []
         except Exception as error:
             app.logger.warning("Could not read products from Vercel Blob: %s", error)
@@ -105,7 +105,7 @@ def save_products(products):
         blob_client().put(pathname, payload, access="private", content_type="application/json")
         return
     if IS_VERCEL:
-        raise StorageUnavailableError("Connect a public Vercel Blob store before changing products.")
+        raise StorageUnavailableError("Connect a private Vercel Blob store before changing products.")
 
     DATA_DIR.mkdir(parents=True, exist_ok=True)
     temporary = DATA_FILE.with_suffix(".tmp")
@@ -156,7 +156,7 @@ def save_upload(upload):
         )
         return url_for("blob_media", pathname=blob.pathname)
     if IS_VERCEL:
-        raise StorageUnavailableError("Connect a public Vercel Blob store before uploading images.")
+        raise StorageUnavailableError("Connect a private Vercel Blob store before uploading images.")
     upload.save(UPLOAD_DIR / filename)
     return f"/static/uploads/{filename}"
 
@@ -224,12 +224,12 @@ def blob_media(pathname):
     if not BLOB_ENABLED or not pathname.startswith("uploads/"):
         abort(404)
     result = blob_client().get(pathname, access="private")
-    if result is None or result.status_code != 200 or result.stream is None:
+    if result is None or result.status_code != 200:
         abort(404)
     return Response(
-        b"".join(result.stream),
-        content_type=result.blob.content_type or "application/octet-stream",
-        headers={"Cache-Control": result.blob.cache_control},
+        result.content,
+        content_type=result.content_type or "application/octet-stream",
+        headers={"Cache-Control": result.cache_control},
     )
 
 
