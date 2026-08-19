@@ -5,12 +5,14 @@ from datetime import datetime
 from functools import wraps
 from pathlib import Path
 
-from flask import Flask, abort, flash, jsonify, redirect, render_template, request, session, url_for
+from flask import Flask, Response, abort, flash, jsonify, redirect, render_template, request, session, url_for
 from werkzeug.security import check_password_hash, generate_password_hash
 from werkzeug.utils import secure_filename
 
 BASE_DIR = Path(__file__).resolve().parent
 IS_VERCEL = os.getenv("VERCEL") == "1"
+BLOB_ENABLED = bool(os.getenv("BLOB_READ_WRITE_TOKEN"))
+BLOB_PRODUCTS_PREFIX = "data/products-"
 DATA_DIR = BASE_DIR / "data"
 DATA_FILE = DATA_DIR / "products.json"
 STATIC_PRODUCTS_FILE = BASE_DIR / "js" / "products-data.js"
@@ -24,6 +26,16 @@ CATEGORIES = {
     "other": "ផ្សេងៗ",
 }
 STATUSES = {"available", "sold", "hidden"}
+
+
+class StorageUnavailableError(RuntimeError):
+    """Raised when persistent storage is not configured on Vercel."""
+
+
+def blob_client():
+    from vercel.blob import BlobClient
+
+    return BlobClient()
 
 app = Flask(__name__)
 app.secret_key = os.getenv("SECRET_KEY", "change-this-secret-key")
@@ -63,6 +75,20 @@ def sync_static_products(products):
 
 
 def load_products():
+    if BLOB_ENABLED:
+        try:
+            listing = blob_client().list_objects(prefix=BLOB_PRODUCTS_PREFIX, limit=100)
+            blobs = [blob for blob in listing.blobs if blob.pathname.startswith(BLOB_PRODUCTS_PREFIX)]
+            if blobs:
+                latest = max(blobs, key=lambda blob: blob.uploaded_at)
+                result = blob_client().get(latest.url, access="private", use_cache=False)
+                if result is None or result.status_code != 200 or result.stream is None:
+                    raise StorageUnavailableError("Could not read product data from Vercel Blob.")
+                data = json.loads(b"".join(result.stream).decode("utf-8"))
+                return data if isinstance(data, list) else []
+        except Exception as error:
+            app.logger.warning("Could not read products from Vercel Blob: %s", error)
+
     ensure_storage()
     try:
         with DATA_FILE.open("r", encoding="utf-8") as file:
@@ -73,6 +99,14 @@ def load_products():
 
 
 def save_products(products):
+    if BLOB_ENABLED:
+        payload = json.dumps(products, ensure_ascii=False, indent=2).encode("utf-8")
+        pathname = f"{BLOB_PRODUCTS_PREFIX}{datetime.now():%Y%m%d%H%M%S%f}-{secrets.token_hex(4)}.json"
+        blob_client().put(pathname, payload, access="private", content_type="application/json")
+        return
+    if IS_VERCEL:
+        raise StorageUnavailableError("Connect a public Vercel Blob store before changing products.")
+
     DATA_DIR.mkdir(parents=True, exist_ok=True)
     temporary = DATA_FILE.with_suffix(".tmp")
     with temporary.open("w", encoding="utf-8") as file:
@@ -113,6 +147,16 @@ def save_upload(upload):
     original = secure_filename(upload.filename)
     extension = original.rsplit(".", 1)[1].lower()
     filename = f"{datetime.now():%Y%m%d%H%M%S}-{secrets.token_hex(6)}.{extension}"
+    if BLOB_ENABLED:
+        blob = blob_client().put(
+            f"uploads/{filename}",
+            upload.read(),
+            access="private",
+            content_type=upload.mimetype or f"image/{extension}",
+        )
+        return url_for("blob_media", pathname=blob.pathname)
+    if IS_VERCEL:
+        raise StorageUnavailableError("Connect a public Vercel Blob store before uploading images.")
     upload.save(UPLOAD_DIR / filename)
     return f"/static/uploads/{filename}"
 
@@ -175,6 +219,20 @@ def index():
     return render_template("index.html")
 
 
+@app.get("/media/<path:pathname>")
+def blob_media(pathname):
+    if not BLOB_ENABLED or not pathname.startswith("uploads/"):
+        abort(404)
+    result = blob_client().get(pathname, access="private")
+    if result is None or result.status_code != 200 or result.stream is None:
+        abort(404)
+    return Response(
+        b"".join(result.stream),
+        content_type=result.blob.content_type or "application/octet-stream",
+        headers={"Cache-Control": result.blob.cache_control},
+    )
+
+
 @app.route("/admin/login", methods=["GET", "POST"])
 def admin_login():
     if session.get("admin_authenticated"):
@@ -234,7 +292,7 @@ def admin_add_product():
             save_products(products)
             flash("Product added successfully.", "success")
             return redirect(url_for("admin_products"))
-        except ValueError as error:
+        except (ValueError, StorageUnavailableError) as error:
             flash(str(error), "error")
     return render_template("admin_add_product.html", product={}, categories=CATEGORIES, statuses=STATUSES)
 
@@ -254,7 +312,7 @@ def admin_edit_product(product_id):
             save_products(products)
             flash("Product updated successfully.", "success")
             return redirect(url_for("admin_products"))
-        except ValueError as error:
+        except (ValueError, StorageUnavailableError) as error:
             flash(str(error), "error")
     return render_template("admin_edit_product.html", product=product, categories=CATEGORIES, statuses=STATUSES)
 
@@ -267,7 +325,11 @@ def admin_delete_product(product_id):
     if not product:
         flash("Product not found.", "error")
         return redirect(url_for("admin_products"))
-    save_products([item for item in products if item.get("id") != product_id])
+    try:
+        save_products([item for item in products if item.get("id") != product_id])
+    except StorageUnavailableError as error:
+        flash(str(error), "error")
+        return redirect(url_for("admin_products"))
     flash("Product deleted successfully.", "success")
     return redirect(url_for("admin_products"))
 
