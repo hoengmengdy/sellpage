@@ -288,7 +288,7 @@ dialog::backdrop { background: #000b; backdrop-filter: blur(6px); }
   .service-strip>span, .service-strip>a { font-size: 10px; padding-left: 15px; }
   .service-strip>:nth-child(odd) { border: 0; padding-left: 0; }
   .service-strip i { font-size: 17px; }
-  .market { padding-top: 34px; }
+  .market { width: calc(100% - 24px); padding-top: 34px; }
   .section-heading { align-items: flex-start; flex-direction: column; gap: 20px; }
   .section-heading h2 { font-size: 23px; }
   .section-heading .eyebrow { margin-bottom: 9px; }
@@ -297,14 +297,19 @@ dialog::backdrop { background: #000b; backdrop-filter: blur(6px); }
   .filters { width: 100%; }
   .catalog-toolbar { margin-top: -3px; margin-bottom: 20px; }
   .filter { font-size: 10px; padding: 7px 12px; }
-  .product-grid { grid-template-columns: minmax(0, 1fr); gap: 18px; }
-  .product-image { aspect-ratio: 1.7; }
-  .card-body { padding: 17px; }
-  .product-name { min-height: 0; margin-bottom: 9px; }
-  .followers { font-size: 11px; }
-  .view-button { min-height: 44px; }
-  .card-actions .icon-button { height: 44px; width: 44px; }
-  .value-tag { font-size: 8px; }
+  .product-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+  .product-card { border-radius: 12px; }
+  .product-image { aspect-ratio: 1.35; margin: 6px 6px 0; border-radius: 7px; }
+  .card-body { padding: 11px; }
+  .card-category { flex-wrap: wrap; align-content: flex-start; min-height: 34px; gap: 4px; font-size: 8px; letter-spacing: .3px; margin-bottom: 6px; }
+  .product-name { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; min-height: 44px; font-size: 12px; line-height: 1.8; margin-bottom: 8px; }
+  .followers { flex-wrap: wrap; gap: 4px; font-size: 10px; }
+  .price { flex-wrap: wrap; gap: 5px; min-height: 30px; font-size: 20px; margin-bottom: 11px; }
+  .price del { font-size: 10px; }
+  .card-actions { gap: 6px; }
+  .view-button { min-width: 0; min-height: 44px; padding: 7px 4px; gap: 5px; font-size: 10px; }
+  .card-actions .icon-button { height: 44px; width: 36px; }
+  .value-tag { font-size: 7px; }
   .catalog-note { flex-wrap: wrap; gap: 3px 7px; line-height: 2; margin-top: 16px; }
   .cart-note { font-size: 9px; }
   .contact-section { grid-template-columns: 1fr; padding-block: 38px; gap: 32px; }
@@ -323,6 +328,11 @@ dialog::backdrop { background: #000b; backdrop-filter: blur(6px); }
   .modal-content h2 { font-size: 20px; }
   .modal-close { top: 9px; right: 9px; }
   .cart-content { padding: 30px 20px 23px; }
+}
+@media (max-width: 360px) {
+  .product-grid { gap: 10px; }
+  .card-body { padding: 9px; }
+  .view-button i { display: none; }
 }
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
