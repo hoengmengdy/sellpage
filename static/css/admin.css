@@ -7,3 +7,36 @@
 .sidebar nav a:hover,.sidebar nav a.active{background:linear-gradient(90deg,#403a3c,#151314)}
 .admin-brand small{color:#c8c1c3}.login-page{background:linear-gradient(135deg,#151314 0%,#211e1f 55%,#403a3c 140%)}
 .form-grid input:focus,.form-grid select:focus,.form-grid textarea:focus{box-shadow:0 0 0 3px rgba(33,30,31,.1)}
+
+/* Shared Black & Gold palette; existing management layouts and controls remain. */
+:root{color-scheme:dark;--primary:#ffb900;--primary-dark:#ffd45a;--dark:#191919;--background:#101010;--white:#201c17;--muted:#b8b1a5;--border:#514026;--shadow:0 5px 20px #0002}
+body{color:#fff}
+.sidebar{background:#161513;border-right:1px solid #70501a}
+.admin-brand img{border-color:#70501a}.admin-brand small{color:#ffb900}
+.sidebar nav a:hover,.sidebar nav a.active{background:#ffb90016;color:#ffb900;box-shadow:inset 2px 0 #ffb900}
+.admin-header,.panel,.form-card,.stat-card,.login-card{background:#201c17}
+.admin-header{border-bottom-color:#70501a}.admin-header>button{color:#ffb900}
+.admin-user,.secondary-button,.admin-filters button,.row-actions a,.row-actions button{background:#191919;color:#e3d9c7;border-color:#70501a}
+.admin-filters button.active{background:#ffb90018;color:#ffb900;border-color:#ffb900}
+.primary-button{color:#1c1505;background:linear-gradient(135deg,#ffb900,#ffd66b)}
+.primary-button:hover{color:#101010;background:#ffd45a}
+.form-grid label{color:#e1d8c9}
+.form-grid input,.form-grid select,.form-grid textarea,.admin-search input,.input-icon input{background:#151412;color:#fff;border-color:#70501a}
+.form-grid input:focus,.form-grid select:focus,.form-grid textarea:focus,.input-icon input:focus{outline-color:#ffb900;box-shadow:0 0 0 3px #ffb90012}
+.table-head{background:#2a2319;color:#d6c198}
+.table-row,.recent-list article{border-bottom-color:#3b3121}
+.recent-name span{color:#b8b1a5}.login-page{background:radial-gradient(ellipse at top right,#70501a35,transparent 65%),#101010}
+.login-card{border:1px solid #70501a}.login-card>img{border:1px solid #70501a}
+.flash.success{background:#16281e;color:#b2e8c3;border-color:#3d6349}
+.flash.error{background:#361c1c;color:#ffc1bd;border-color:#7b3c36}
+.status.available{background:#173722;color:#a4dfb5}.status.sold{background:#3b2c17;color:#ffd08a}.status.hidden{background:#35312a;color:#d3ccbf}
+dialog{background:#201c17;color:#fff;border:1px solid #70501a}
+:focus-visible{outline:2px solid #ffd45a;outline-offset:3px}
+[hidden]{display:none!important}
+@media(max-width:650px){
+  .product-admin-row{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+  .product-admin-row>span{min-width:0;flex-wrap:wrap;overflow-wrap:anywhere}
+  .product-admin-row>span:nth-child(3) b{max-width:75%;text-align:right}
+  .product-admin-row>span::before{flex-shrink:0}
+  .row-actions{grid-column:1/-1}
+}
