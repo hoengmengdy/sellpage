@@ -3,6 +3,7 @@
 Run: python -m unittest discover -s tests -v
 """
 import io
+import importlib.metadata
 import json
 import os
 import tempfile
@@ -10,6 +11,8 @@ import unittest
 from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import Mock, patch
+
+import httpx
 
 # Import without filesystem initialization or access to real cloud credentials.
 with patch.dict(os.environ, {"VERCEL": "1", "BLOB_READ_WRITE_TOKEN": ""}):
@@ -140,6 +143,60 @@ class ProductStorageTests(unittest.TestCase):
         response = admin.app.test_client().get("/admin/products/add")
         self.assertEqual(response.status_code, 302)
         self.assertIn("/admin/login", response.location)
+
+
+class BlobSdkCompatibilityTests(unittest.TestCase):
+    def test_real_sdk_reads_catalog_and_writes_products_and_images(self):
+        # Mock the HTTP boundary, not BlobClient: SDK import/response changes must fail this test.
+        from vercel.blob import BlobClient
+
+        self.assertEqual(importlib.metadata.version("vercel"), "0.10.0")
+        client = BlobClient(token="vercel_blob_rw_teststore_secret")
+        self.addCleanup(client.close)
+        pathname = "data/products-20261022090000-existing.json"
+        base = "https://teststore.private.blob.vercel-storage.com/"
+        products = [{"id": 7, "name": "Saved product", "followers": "3K", "price": 24.6}]
+        writes = []
+
+        def send(http_client, request, **kwargs):
+            if request.url.host == "teststore.private.blob.vercel-storage.com":
+                return httpx.Response(
+                    200, content=json.dumps(products).encode(), request=request,
+                    headers={
+                        "content-type": "application/json", "etag": "test-etag",
+                        "last-modified": "Thu, 22 Oct 2026 09:00:00 GMT",
+                        "cache-control": "private, max-age=0",
+                    },
+                )
+            if request.method == "GET":
+                return httpx.Response(200, request=request, json={
+                    "blobs": [{
+                        "pathname": pathname, "url": base + pathname,
+                        "downloadUrl": base + pathname + "?download=1", "size": 100,
+                        "uploadedAt": "2026-10-22T09:00:00.000Z",
+                    }], "hasMore": False, "cursor": None,
+                })
+            self.assertEqual(request.method, "PUT")
+            written_path = request.url.params["pathname"]
+            writes.append((written_path, request.read()))
+            return httpx.Response(200, request=request, json={
+                "pathname": written_path, "url": base + written_path,
+                "downloadUrl": base + written_path + "?download=1",
+                "contentType": request.headers.get("content-type", "application/octet-stream"),
+                "contentDisposition": "inline",
+            })
+
+        with patch.object(httpx.Client, "send", send), patch.multiple(admin, BLOB_ENABLED=True, IS_VERCEL=True), patch.object(admin, "blob_client", return_value=client):
+            loaded = admin.load_products(for_write=True)
+            self.assertEqual(loaded, products)
+            loaded.append({"id": 8, "name": "New product", "followers": "1K", "price": 10})
+            admin.save_products(loaded)
+            self.assertEqual(json.loads(writes[0][1]), loaded)
+            with admin.app.test_request_context():
+                from werkzeug.datastructures import FileStorage
+                image = admin.save_upload(FileStorage(stream=io.BytesIO(b"test image bytes"), filename="page.png"))
+            self.assertTrue(image.startswith("/media/uploads/"), image)
+            self.assertEqual(writes[1][1], b"test image bytes")
 
 
 if __name__ == "__main__":
