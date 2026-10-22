@@ -54,6 +54,8 @@ def allow_local_storefront(response):
 
 
 def ensure_storage():
+    if IS_VERCEL:
+        return
     DATA_DIR.mkdir(parents=True, exist_ok=True)
     UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
     if not DATA_FILE.exists():
@@ -74,7 +76,7 @@ def sync_static_products(products):
     temporary.replace(STATIC_PRODUCTS_FILE)
 
 
-def load_products():
+def load_products(*, for_write=False):
     if BLOB_ENABLED:
         try:
             listing = blob_client().list_objects(prefix=BLOB_PRODUCTS_PREFIX, limit=100)
@@ -88,6 +90,10 @@ def load_products():
                 return data if isinstance(data, list) else []
         except Exception as error:
             app.logger.warning("Could not read products from Vercel Blob: %s", error)
+            if for_write:
+                raise StorageUnavailableError(
+                    "Could not read saved products. Please try again before changing the catalog."
+                ) from error
 
     ensure_storage()
     try:
@@ -102,18 +108,29 @@ def save_products(products):
     if BLOB_ENABLED:
         payload = json.dumps(products, ensure_ascii=False, indent=2).encode("utf-8")
         pathname = f"{BLOB_PRODUCTS_PREFIX}{datetime.now():%Y%m%d%H%M%S%f}-{secrets.token_hex(4)}.json"
-        blob_client().put(pathname, payload, access="private", content_type="application/json")
+        try:
+            blob_client().put(pathname, payload, access="private", content_type="application/json")
+        except Exception as error:
+            app.logger.exception("Could not save product data to Vercel Blob.")
+            raise StorageUnavailableError(
+                "Product changes could not be saved. Check that a private Vercel Blob store "
+                "is connected to this project's Production environment, then try again."
+            ) from error
         return
     if IS_VERCEL:
         raise StorageUnavailableError("Connect a private Vercel Blob store before changing products.")
 
-    DATA_DIR.mkdir(parents=True, exist_ok=True)
-    temporary = DATA_FILE.with_suffix(".tmp")
-    with temporary.open("w", encoding="utf-8") as file:
-        json.dump(products, file, ensure_ascii=False, indent=2)
-        file.flush()
-        os.fsync(file.fileno())
-    temporary.replace(DATA_FILE)
+    try:
+        DATA_DIR.mkdir(parents=True, exist_ok=True)
+        temporary = DATA_FILE.with_suffix(".tmp")
+        with temporary.open("w", encoding="utf-8") as file:
+            json.dump(products, file, ensure_ascii=False, indent=2)
+            file.flush()
+            os.fsync(file.fileno())
+        temporary.replace(DATA_FILE)
+    except OSError as error:
+        app.logger.exception("Could not save the local product catalog.")
+        raise StorageUnavailableError("Product changes could not be saved. Please check storage and try again.") from error
     sync_static_products(products)
 
 
@@ -148,16 +165,28 @@ def save_upload(upload):
     extension = original.rsplit(".", 1)[1].lower()
     filename = f"{datetime.now():%Y%m%d%H%M%S}-{secrets.token_hex(6)}.{extension}"
     if BLOB_ENABLED:
-        blob = blob_client().put(
-            f"uploads/{filename}",
-            upload.read(),
-            access="private",
-            content_type=upload.mimetype or f"image/{extension}",
-        )
+        try:
+            blob = blob_client().put(
+                f"uploads/{filename}",
+                upload.read(),
+                access="private",
+                content_type=upload.mimetype or f"image/{extension}",
+            )
+        except Exception as error:
+            app.logger.exception("Could not upload the product image to Vercel Blob.")
+            raise StorageUnavailableError(
+                "The image could not be uploaded. Check the private Vercel Blob connection "
+                "and try again. Please select the image again before resubmitting."
+            ) from error
         return url_for("blob_media", pathname=blob.pathname)
     if IS_VERCEL:
         raise StorageUnavailableError("Connect a private Vercel Blob store before uploading images.")
-    upload.save(UPLOAD_DIR / filename)
+    try:
+        UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
+        upload.save(UPLOAD_DIR / filename)
+    except OSError as error:
+        app.logger.exception("Could not save the product image locally.")
+        raise StorageUnavailableError("The image could not be saved. Please check storage and try again.") from error
     return f"/static/uploads/{filename}"
 
 
@@ -283,10 +312,11 @@ def admin_products():
 @app.route("/admin/products/add", methods=["GET", "POST"])
 @login_required
 def admin_add_product():
+    form_product = request.form.to_dict() if request.method == "POST" else {}
     if request.method == "POST":
         try:
+            products = load_products(for_write=True)
             product = product_from_form()
-            products = load_products()
             product.update(id=generate_product_id(products), created_at=datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
             products.append(product)
             save_products(products)
@@ -294,13 +324,20 @@ def admin_add_product():
             return redirect(url_for("admin_products"))
         except (ValueError, StorageUnavailableError) as error:
             flash(str(error), "error")
-    return render_template("admin_add_product.html", product={}, categories=CATEGORIES, statuses=STATUSES)
+    return render_template(
+        "admin_add_product.html", product=form_product, categories=CATEGORIES, statuses=STATUSES,
+        storage_unavailable=IS_VERCEL and not BLOB_ENABLED,
+    )
 
 
 @app.route("/admin/products/edit/<int:product_id>", methods=["GET", "POST"])
 @login_required
 def admin_edit_product(product_id):
-    products = load_products()
+    try:
+        products = load_products(for_write=request.method == "POST")
+    except StorageUnavailableError as error:
+        flash(str(error), "error")
+        return redirect(url_for("admin_products"))
     product = next((item for item in products if item.get("id") == product_id), None)
     if not product:
         flash("Product not found.", "error")
@@ -314,13 +351,20 @@ def admin_edit_product(product_id):
             return redirect(url_for("admin_products"))
         except (ValueError, StorageUnavailableError) as error:
             flash(str(error), "error")
-    return render_template("admin_edit_product.html", product=product, categories=CATEGORIES, statuses=STATUSES)
+    return render_template(
+        "admin_edit_product.html", product=product, categories=CATEGORIES, statuses=STATUSES,
+        storage_unavailable=IS_VERCEL and not BLOB_ENABLED,
+    )
 
 
 @app.post("/admin/products/delete/<int:product_id>")
 @login_required
 def admin_delete_product(product_id):
-    products = load_products()
+    try:
+        products = load_products(for_write=True)
+    except StorageUnavailableError as error:
+        flash(str(error), "error")
+        return redirect(url_for("admin_products"))
     product = next((item for item in products if item.get("id") == product_id), None)
     if not product:
         flash("Product not found.", "error")

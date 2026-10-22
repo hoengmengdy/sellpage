@@ -1,4 +1,5 @@
 <form method="post" enctype="multipart/form-data" class="product-form" novalidate>
+  {% if storage_unavailable %}<div class="flash error" role="alert"><i class="fa-solid fa-database" aria-hidden="true"></i><span>Product storage is not connected. In Vercel → this project → Storage, connect a private Blob store to Production, then redeploy to enable saving products and images.</span></div>{% endif %}
   <section class="form-card"><h2>Product Information</h2><div class="form-grid">
     <label class="wide">Product Name *<input name="name" value="{{ product.get('name','') }}" required placeholder="PAGE 10K Follower"></label>
     <label>Followers *<input name="followers" value="{{ product.get('followers','') }}" required placeholder="10K"></label>
