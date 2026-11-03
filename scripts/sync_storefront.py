@@ -13,6 +13,9 @@ def sync():
     html = (ROOT / "templates/index.html").read_text(encoding="utf-8")
     replacements = {
         "{{ url_for('static', filename='css/style.css') }}": "css/style.css",
+        "{{ url_for('static', filename='css/motion.css') }}": "css/motion.css",
+        "<script src=\"{{ url_for('static', filename='js/motion.js') }}\"></script>":
+            '<script src="js/motion.js"></script>',
         "{{ url_for('static', filename='images/logo.jpg') }}": "images/logo.jpg",
         "<script src=\"{{ url_for('static', filename='js/app.js') }}\"></script>":
             '<script src="js/products-data.js"></script>\n  <script src="js/app.js"></script>',
@@ -20,7 +23,7 @@ def sync():
     for original, replacement in replacements.items():
         html = html.replace(original, replacement)
     (ROOT / "index.html").write_text(html, encoding="utf-8")
-    for asset in ("css/style.css", "js/app.js"):
+    for asset in ("css/style.css", "css/motion.css", "js/app.js", "js/motion.js"):
         shutil.copyfile(ROOT / "static" / asset, ROOT / asset)
 
 

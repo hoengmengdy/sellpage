@@ -24,7 +24,7 @@ button:disabled { cursor: default; opacity: .55; }
 img { display: block; max-width: 100%; }
 [hidden] { display: none !important; }
 :focus-visible { outline: 2px solid var(--hover); outline-offset: 5px; }
-.container { width: min(1280px, calc(100% - 80px)); margin-inline: auto; }
+.container { width: min(1280px, calc(100% - 80px)); max-width: none; margin-inline: auto; padding-inline: 0; }
 .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
 .skip-link { position: fixed; top: -100px; left: 20px; z-index: 1000; padding: 10px 20px; background: var(--gold); color: #101010; }
 .skip-link:focus { top: 10px; }
@@ -179,13 +179,13 @@ input[type=search]::-webkit-search-cancel-button { display: none; }
 dialog { color: var(--text); padding: 0; background: #201c17; border: 1px solid var(--border); border-radius: 18px; box-shadow: 0 30px 100px #0009; max-height: calc(100dvh - 40px); }
 dialog::backdrop { background: #000b; backdrop-filter: blur(6px); }
 .product-modal { width: min(930px, calc(100% - 40px)); }
-.modal-dialog { display: grid; grid-template-columns: 1.1fr 1fr; }
+.pm-layout { display: grid; grid-template-columns: 1.1fr 1fr; }
 .modal-close { position: absolute; top: 12px; right: 12px; z-index: 2; }
 .modal-image { display: grid; place-items: center; min-height: 410px; padding: 22px; background: #161513; }
 .modal-image img { width: 100%; max-height: 65vh; object-fit: contain; border-radius: 8px; }
-.modal-content { padding: 38px 28px 28px; }
-.modal-content h2 { font-size: 23px; line-height: 1.8; margin: 0 0 10px; overflow-wrap: anywhere; }
-.modal-content .eyebrow { margin-bottom: 8px; }
+.pm-content { padding: 38px 28px 28px; }
+.pm-content h2 { font-size: 23px; line-height: 1.8; margin: 0 0 10px; overflow-wrap: anywhere; }
+.pm-content .eyebrow { margin-bottom: 8px; }
 .availability { display: inline-flex; align-items: center; gap: 6px; font-size: 10px; color: var(--gold); }
 .availability::before { content: ""; width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
 .availability.sold { color: var(--muted); }
@@ -197,7 +197,7 @@ dialog::backdrop { background: #000b; backdrop-filter: blur(6px); }
 #modalDescription { color: #d2c8b8; font-size: 12px; line-height: 2; white-space: pre-line; overflow-wrap: anywhere; }
 .modal-actions { display: flex; gap: 8px; margin: 22px 0 12px; }
 .modal-actions>a { flex: 1; padding: 9px; font-size: 10px; }
-.modal-content>.gold-button, .modal-content>button { width: 100%; margin-top: 8px; }
+.pm-content>.gold-button, .pm-content>button { width: 100%; margin-top: 8px; }
 [aria-disabled=true] { opacity: .5; cursor: default; }
 .cart-modal { width: min(540px, calc(100% - 32px)); }
 .cart-content { padding: 34px 28px 26px; }
@@ -212,8 +212,8 @@ dialog::backdrop { background: #000b; backdrop-filter: blur(6px); }
 .cart-total { display: flex; justify-content: space-between; align-items: center; margin-block: 22px; }
 .cart-total strong { color: var(--gold); font-size: 23px; }
 #cartCheckout { width: 100%; }
-.toast { position: fixed; z-index: 600; left: 50%; bottom: 24px; transform: translate(-50%, 20px); opacity: 0; visibility: hidden; background: #302819; border: 1px solid var(--gold); color: #fff0cd; border-radius: 8px; padding: 12px 20px; transition: .2s; max-width: calc(100% - 30px); text-align: center; font-size: 12px; }
-.toast.visible { opacity: 1; visibility: visible; transform: translate(-50%, 0); }
+.smm-toast { position: fixed; z-index: 600; left: 50%; bottom: 24px; transform: translate(-50%, 20px); opacity: 0; visibility: hidden; background: #302819; border: 1px solid var(--gold); color: #fff0cd; border-radius: 8px; padding: 12px 20px; transition: .2s; max-width: calc(100% - 30px); text-align: center; font-size: 12px; }
+.smm-toast.visible { opacity: 1; visibility: visible; transform: translate(-50%, 0); }
 @media (min-width: 1500px) { .hero-layout { min-height: 450px; } }
 @media (max-width: 1200px) {
   .container { width: calc(100% - 48px); }
@@ -320,12 +320,12 @@ dialog::backdrop { background: #000b; backdrop-filter: blur(6px); }
   .footer-main nav { width: 100%; order: 3; gap: 25px; }
   .footer-bottom { flex-direction: column; gap: 6px; padding-bottom: 24px; }
   .telegram-float { width: 43px; height: 43px; right: 16px; bottom: 18px; font-size: 22px; border-radius: 12px; }
-  .modal-dialog { grid-template-columns: 1fr; }
+  .pm-layout { grid-template-columns: 1fr; }
   .product-modal { width: calc(100% - 24px); }
   .modal-image { min-height: 0; padding: 18px; }
   .modal-image img { max-height: 230px; }
-  .modal-content { padding: 22px; }
-  .modal-content h2 { font-size: 20px; }
+  .pm-content { padding: 22px; }
+  .pm-content h2 { font-size: 20px; }
   .modal-close { top: 9px; right: 9px; }
   .cart-content { padding: 30px 20px 23px; }
 }

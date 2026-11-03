@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="km">
+<html lang="km" data-bs-theme="dark">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -10,9 +10,12 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Hanuman:wght@400;600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/css/bootstrap.min.css">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/motion.css') }}">
 </head>
 <body>
+  <div class="scroll-progress" id="scrollProgress" aria-hidden="true"></div>
   <a class="skip-link" href="#products">Skip to products</a>
   <header class="topbar">
     <div class="container nav-inner">
@@ -39,6 +42,8 @@
   <main id="home">
     <section class="hero" aria-labelledby="heroTitle">
       <div class="hero-orbit" aria-hidden="true"></div>
+      <div class="hero-grid" aria-hidden="true"></div>
+      <canvas class="hero-sparks" id="heroSparks" aria-hidden="true"></canvas>
       <div class="container hero-layout">
         <div class="hero-content">
           <p class="eyebrow"><span class="gold-dot"></span> SMM DIGITAL MARKETPLACE</p>
@@ -93,9 +98,11 @@
   </main>
   <footer class="footer"><div class="container footer-main"><a class="brand" href="#home"><img class="brand-mark" src="{{ url_for('static', filename='images/logo.jpg') }}" alt=""><span><strong>SMM <b>DIGITAL</b></strong><small>លក់ផេក • ទិញផេក • សេវាកម្ម</small></span></a><nav aria-label="Footer navigation"><a href="#products">Marketplace</a><a href="#contact">Contact</a></nav><div class="footer-social"><a href="https://facebook.com/" target="_blank" rel="noopener" aria-label="Facebook"><i class="fa-brands fa-facebook" aria-hidden="true"></i></a><a href="https://t.me/heng_dexter3" target="_blank" rel="noopener" aria-label="Telegram"><i class="fa-brands fa-telegram" aria-hidden="true"></i></a></div></div><div class="container footer-bottom"><span>© 2026 SMM DIGITAL. រក្សាសិទ្ធិគ្រប់យ៉ាង។</span><span><i class="fa-solid fa-location-dot" aria-hidden="true"></i> ភ្នំពេញ កម្ពុជា</span></div></footer>
   <a class="telegram-float" href="https://t.me/heng_dexter3" target="_blank" rel="noopener" aria-label="Chat on Telegram"><i class="fa-brands fa-telegram" aria-hidden="true"></i></a>
-  <dialog class="product-modal" id="productModal" aria-labelledby="modalTitle"><div class="modal-dialog"><button class="modal-close icon-button" id="modalClose" type="button" aria-label="Close product details"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button><div class="modal-image"><img id="modalImage" alt=""></div><div class="modal-content"><p class="eyebrow" id="modalCategory"></p><h2 id="modalTitle"></h2><span class="availability" id="modalStatus"></span><div class="modal-price"><strong id="modalPrice"></strong><del id="modalOldPrice"></del></div><p class="modal-followers"><i class="fa-solid fa-users" aria-hidden="true"></i> Followers: <b id="modalFollowers"></b></p><p id="modalDescription"></p><div class="modal-actions"><a href="https://facebook.com/" target="_blank" rel="noopener" class="facebook outline-button"><i class="fa-brands fa-facebook" aria-hidden="true"></i> ចូលមើល Page</a><a href="https://t.me/heng_dexter3" target="_blank" rel="noopener" class="telegram outline-button"><i class="fa-brands fa-telegram" aria-hidden="true"></i> Telegram</a></div><a class="buy-button gold-button" href="https://t.me/heng_dexter3" target="_blank" rel="noopener"><i class="fa-solid fa-bag-shopping" aria-hidden="true"></i> ទិញតាម Telegram</a><button class="outline-button" id="modalAddCart" type="button"><i class="fa-solid fa-plus" aria-hidden="true"></i> Add to cart</button></div></div></dialog>
+  <dialog class="product-modal" id="productModal" aria-labelledby="modalTitle"><div class="pm-layout"><button class="modal-close icon-button" id="modalClose" type="button" aria-label="Close product details"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button><div class="modal-image"><img id="modalImage" alt=""></div><div class="pm-content"><p class="eyebrow" id="modalCategory"></p><h2 id="modalTitle"></h2><span class="availability" id="modalStatus"></span><div class="modal-price"><strong id="modalPrice"></strong><del id="modalOldPrice"></del></div><p class="modal-followers"><i class="fa-solid fa-users" aria-hidden="true"></i> Followers: <b id="modalFollowers"></b></p><p id="modalDescription"></p><div class="modal-actions"><a href="https://facebook.com/" target="_blank" rel="noopener" class="facebook outline-button"><i class="fa-brands fa-facebook" aria-hidden="true"></i> ចូលមើល Page</a><a href="https://t.me/heng_dexter3" target="_blank" rel="noopener" class="telegram outline-button"><i class="fa-brands fa-telegram" aria-hidden="true"></i> Telegram</a></div><a class="buy-button gold-button" href="https://t.me/heng_dexter3" target="_blank" rel="noopener"><i class="fa-solid fa-bag-shopping" aria-hidden="true"></i> ទិញតាម Telegram</a><button class="outline-button" id="modalAddCart" type="button"><i class="fa-solid fa-plus" aria-hidden="true"></i> Add to cart</button></div></div></dialog>
   <dialog class="cart-modal" id="cartModal" aria-labelledby="cartTitle"><div class="cart-content"><button class="modal-close icon-button" id="cartClose" type="button" aria-label="Close shopping cart"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button><p class="eyebrow">YOUR SELECTION</p><h2 id="cartTitle">Shopping <span>cart</span></h2><p class="section-subtitle">Review your selection and contact us to order.</p><div id="cartItems"></div><div class="cart-total"><span>Subtotal</span><strong id="cartTotal">$0.00</strong></div><a class="gold-button" id="cartCheckout" href="https://t.me/heng_dexter3" target="_blank" rel="noopener"><i class="fa-brands fa-telegram" aria-hidden="true"></i> Order via Telegram <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></a><p class="cart-note">Confirm availability and payment details with SMM Digital on Telegram.</p></div></dialog>
-  <div class="toast" id="toast" role="status"></div>
+  <div class="smm-toast" id="toast" role="status"></div>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/js/bootstrap.bundle.min.js"></script>
   <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/motion.js') }}"></script>
 </body>
 </html>
